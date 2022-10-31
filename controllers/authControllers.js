@@ -17,8 +17,9 @@ const userLogin = async (req, res) => {
         delete user.password
         delete user._id
         const accessToken = jwt.sign({ user }, JWT_SECRET)
-        res.cookie('jwt', accessToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 })
-        return res.json(accessToken)
+        // res.cookie('jwt', accessToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 })
+        // return res.json(accessToken)
+        return res.status(201).send(user)
     }
     return res.status(401).json({ status: 'error', message: "Invalid username/password" })
 }
