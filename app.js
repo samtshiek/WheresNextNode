@@ -25,10 +25,10 @@ mongoose.connect(mongoDBURI).then(
 );
 
 // router
-// const indexRouter = require('./routes/index');
+const authRouter = require('./routes/authRoutes');
 const userRouter = require('./routes/userRoutes');
 
-// app.use('/', indexRouter);
+app.use('/', authRouter);
 app.use('/users', userRouter);
 
 // It'll use the default port if there's one otherwise 3000.
