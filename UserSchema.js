@@ -11,6 +11,9 @@ const preferenceSchema = new Schema({
     // Active / Inactive
     active: { type: Number, default: 0 },
     inactive: { type: Number, default: 0 },
+    // Sensitive / Insensitive
+    sensitive: { type: Number, default: 0 },
+    insensitive: { type: Number, default: 0 },
     // Bar, Museum, Park, Restaurant, Coffee, Trail, Movie
     placeType: { type: Map, of: Number, default: {} }
 })
