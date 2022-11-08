@@ -2,18 +2,18 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const preferenceSchema = new Schema({
-    // Introverted / Extroverted
-    introverted: { type: Number, default: 0 },
-    extroverted: { type: Number, default: 0 },
-    // Indoor / Outdoor
-    outdoor: { type: Number, default: 0 },
-    indoor: { type: Number, default: 0 },
-    // Active / Inactive
-    active: { type: Number, default: 0 },
-    inactive: { type: Number, default: 0 },
-    // Sensitive / Insensitive
-    sensitive: { type: Number, default: 0 },
-    insensitive: { type: Number, default: 0 },
+    // Extroverted
+    extrovertedSum: { type: Number, default: 0 },
+    extrovertedCount: { type: Number, default: 0 },
+    // Outdoor
+    outdoorSum: { type: Number, default: 0 },
+    outdoorCount: { type: Number, default: 0 },
+    // Active
+    activeSum: { type: Number, default: 0 },
+    activeCount: { type: Number, default: 0 },
+    // Sensitive
+    sensitiveSum: { type: Number, default: 0 },
+    sensitiveCount: { type: Number, default: 0 },
     // Bar, Museum, Park, Restaurant, Coffee, Trail, Movie
     placeType: { type: Map, of: Number, default: {} }
 })

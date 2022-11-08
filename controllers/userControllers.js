@@ -50,93 +50,152 @@ const getUserById = async (req, res) => {
 
 // Store quiz result to DB
 const gradeQuiz = async (req, res) => {
-    let user = await User.findById('6363323c70d6f57eb1da92c1')//req.body.id)
+    let user = await User.findById('6369d6c04184bd98f8f9270e')//req.body.id)
     const gradeTable = {
-        // choice: [extrovert/introverted, outdoor/indoor, active/inactive, sensitive/insensitive]
-        // If value's positive, I'll add the value to the front one, otherwise the back one.
-        a1:  [2, 0, 2, 0],
-        b1:  [-1, 0, -5, 0],
-        c1:  [1, 0, 0, 0],
-        d1:  [3, 0, 2, 0],
+        // For each scale (extroverted, outdoor, active, sensitive), we have two variables, sum and count in the DB.
+        // E.g., extrovertedSum, extrovertedCount. When we need to know the percentage (how extroverted the user is)
+        // We just need to divide sum by count.
+        // By keeping track of the count, we can keep each value's impact the same.
+        // (otherwise the later added value will have higher impact)
 
-        a2:  [5, 0, 2, 0], // Restaurant 5
-        b2:  [1, 0, 0, 0], // Restaurant 3
-        c2:  [-1, 0, 0, 0],
-        d2:  [-5, 0, 0, 0],
+        // -1 means this answer doesn't affect this scale. Thus, it won't be added to sum and count.
+        a1:  [7, -1, 7, -1],
+        b1:  [4, -1, 0, -1],
+        c1:  [6, -1, 5, -1],
+        d1:  [8, -1, 7, -1],
 
-        a3:  [4, 0, 2, 0],
-        b3:  [1, 0, 0, 0],
-        c3:  [0, 0, -5, 0],
-        d3:  [-2, 0, 0, 0],
+        a2:  [10, -1, 7, -1], // Restaurant 10
+        b2:  [6, -1, 5, -1], // Restaurant 8
+        c2:  [4, -1, 5, -1],
+        d2:  [0, -1, -1, -1],
 
-        a4:  [0, 0, 0, 3], // Museum 5
-        b4:  [0, 0, 0, 0], // Museum 3
-        c4:  [0, 0, 0, 0],
-        d4:  [0, 0, 0, 0], // Museum -5
+        a3:  [9, -1, 7, -1],
+        b3:  [6, -1, -1, -1],
+        c3:  [5, -1, 0, -1],
+        d3:  [3, -1, -1, -1],
 
-        a5:  [0, 5, 0, 0], // Park 5 Trail 5
-        b5:  [0, 3, 0, 0], // Park 3 Trail 3
-        c5:  [0, 0, 0, 0],
-        d5:  [0, -5, 0, 0], // Park -5 Trail -5
+        a4:  [-1, -1, -1, 8], // Museum 10
+        b4:  [-1, -1, -1, -1], // Museum 8
+        c4:  [-1, -1, -1, -1], // Museum 5
+        d4:  [-1, -1, -1, -1], // Museum 0
 
-        a6:  [0, 0, 4, 0],
-        b6:  [0, 0, 1, 0],
-        c6:  [0, 0, -1, 0],
-        d6:  [0, 0, 0, 0], // Trail 3
+        a5:  [-1, 10, -1, -1], // Park 10 Trail 10
+        b5:  [-1, 8, -1, -1], // Park 8 Trail 8
+        c5:  [-1, 5, -1, -1],
+        d5:  [-1, 0, -1, -1], // Park 0 Trail 0
 
-        a7:  [3, 0, 5, 0],
-        b7:  [1, 0, 2, 0],
-        c7:  [-2, 0, 0, 0],
-        d7:  [-3, 0, -4, 0],
+        a6:  [-1, -1, 9, -1],
+        b6:  [-1, -1, 6, -1],
+        c6:  [-1, -1, 4, -1],
+        d6:  [-1, -1, 5, -1], // Trail 8
 
-        a8:  [2, 0, -1, 0],
-        b8:  [2, 0, 5, 0], // Bar 5
-        c8:  [2, 0, 0, 0], // Bar 2
-        d8:  [0, 0, 0, 0], // Bar -5
+        a7:  [8, -1, 10, -1],
+        b7:  [6, -1, 7, -1],
+        c7:  [3, -1, 5, -1],
+        d7:  [2, -1, 1, -1],
 
-        a9:  [5, 0, 0, 0], // Coffee shop 5
-        b9:  [3, 0, 0, 0], // Coffee shop 3
-        c9:  [0, 0, 0, 0],
-        d9:  [0, 0, 0, 0], // Coffee shop -5
+        a8:  [7, -1, 4, -1],
+        b8:  [7, -1, 10, -1], // Bar 10
+        c8:  [7, -1, -1, -1], // Bar 7
+        d8:  [-1, -1, -1, -1], // Bar 0
 
-        a10: [0, 1, 5, 0],
-        b10: [0, 5, 3, 0], // Trail 5
-        c10: [0, 0, 1, 0],
-        d10: [0, 0, -5, 0], // Movie theater 2
+        a9:  [10, -1, -1, -1], // Coffee shop 10
+        b9:  [8, -1, -1, -1], // Coffee shop 8
+        c9:  [-1, -1, -1, -1], // Coffee shop 5
+        d9:  [-1, -1, -1, -1], // Coffee shop 0
+
+        a10: [6, -1, 10, -1],
+        b10: [-1, 10, 8, -1], // Trail 10
+        c10: [-1, -1, 6, -1],
+        d10: [-1, -1, 0, -1], // Movie Theater 7
     }
-    const ansArray = ['a1', 'b2', 'c3']// req.body.ansArray
-    ansArray.forEach(function(item) {
-        // choice: [extrovert/introverted, outdoor/indoor, active/inactive, sensitive/insensitive]
-        grade = gradeTable[item]
+    const ansArray = ['a1', 'b2', 'c3', 'd4', 'a5', 'b6', 'c7', 'd8', 'a9', 'b10'] //req.body.ansArray
 
-        if (grade[0] > 0){
-            user.preference.introverted += grade[0]
-        } else {
-            user.preference.extroverted += grade[0] * -1
+    // Get value from database
+    extrovertedSum = user.preference.extrovertedSum
+    extrovertedCount = user.preference.extrovertedCount
+    outdoorSum = user.preference.outdoorSum
+    outdoorCount = user.preference.outdoorCount
+    activeSum = user.preference.activeSum
+    activeCount = user.preference.activeCount
+    sensitiveSum = user.preference.sensitiveSum
+    sensitiveCount = user.preference.sensitiveCount
+
+    ansArray.forEach(function(item) {
+        // choice: [extroverted, outdoor, active, sensitive]
+        grade = gradeTable[item]
+        if (grade[0] != -1) {
+            extrovertedSum += grade[0]
+            extrovertedCount += 1
         }
-        if (grade[1] > 0){
-            user.preference.outdoor += grade[1]
-        } else {
-            user.preference.indoor += grade[1] * -1
+        if (grade[1] != -1) {
+            outdoorSum += grade[1]
+            outdoorCount += 1
         }
-        if (grade[2] > 0){
-            user.preference.active += grade[2]
-        } else {
-            user.preference.inactive += grade[2] * -1
+        if (grade[2] != -1) {
+            activeSum += grade[2]
+            activeCount += 1
         }
-        if (grade[2] > 0){
-            user.preference.sensitive += grade[3]
-        } else {
-            user.preference.insensitive += grade[3] * -1
+        if (grade[3] != -1) {
+            sensitiveSum += grade[3]
+            sensitiveCount += 1
         }
     })
+
+    user.preference.extrovertedSum = extrovertedSum
+    user.preference.outdoorSum = outdoorSum
+    user.preference.activeSum = activeSum
+    user.preference.sensitiveSum = sensitiveSum
+    user.preference.extrovertedCount = extrovertedCount
+    user.preference.outdoorCount = outdoorCount
+    user.preference.activeCount = activeCount
+    user.preference.sensitiveCount = sensitiveCount
     user.save();
     res.json(user)
 }
+
+const getPercentage = async (req, res) => {
+    try {
+        let user = await User.findById('6369d6c04184bd98f8f9270e')//req.body.id)
+        // If statements to prevent zero division error. Somehow it's not throwing zero division error, but I send 5 as default if count == 0.
+        switch (req.params.scale) {
+            case "extroverted":
+                if (user.preference.extrovertedCount == 0) {
+                    return res.json({ "sensitive": 5 })
+                }
+                return res.json({ "extroverted": Math.round(user.preference.extrovertedSum / user.preference.extrovertedCount) })
+    
+            case "outdoor":
+                if (user.preference.outdoorCount == 0) {
+                    return res.json({ "sensitive": 5 })
+                }
+                return res.json({ "outdoor": Math.round(user.preference.outdoorSum / user.preference.outdoorCount) })
+    
+            case "active":
+                if (user.preference.activeCount == 0) {
+                    return res.json({ "sensitive": 5 })
+                }
+                return res.json({ "active": Math.round(user.preference.activeSum / user.preference.activeCount) })
+    
+            case "sensitive":
+                if (user.preference.sensitiveCount == 0) {
+                    return res.json({ "sensitive": 5 })
+                }
+                return res.json({ "sensitive": Math.round(user.preference.sensitiveSum / user.preference.sensitiveCount) })
+                
+            default:
+                return res.json({ message: `Scale ${req.params.scale} not found.` })
+        }
+    } catch (err) {
+        return res.status(500).json({ message: err.message })
+    }
+}
+
 
 module.exports = {
     getAllUsers,
     createNewUser,
     getUserById,
     gradeQuiz,
+    getPercentage,
 }
