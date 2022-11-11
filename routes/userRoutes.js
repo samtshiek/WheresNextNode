@@ -8,6 +8,7 @@ router.get("/:id", User.getUserById);
 router.get("/:id/:scale", User.getPercentage);
 router.post("/create", User.createNewUser);
 router.post("/submit-quiz", User.gradeQuiz)
+router.post("/get-recommendations", User.sortQueryResultByPreference)
 
 
 module.exports = router;

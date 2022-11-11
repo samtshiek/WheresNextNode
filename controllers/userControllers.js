@@ -191,6 +191,67 @@ const getPercentage = async (req, res) => {
     }
 }
 
+const sortQueryResultByPreference = async (req, res) => {
+    let user = await User.findById(req.body.userId)
+    let places = req.body.results
+    let userPlaceTypeTable = user.preference.placeType
+
+    let sortedPlaces = calculateMatchScore(userPlaceTypeTable, places)
+
+    console.log(sortedPlaces)
+    res.json(sortedPlaces)
+}
+
+
+// """""Helper function to calculate and sort the places"""""
+// Takes in the user placeType preference table and list of place.
+// Returns a list of [matchScore, placeName]
+function calculateMatchScore(userPlaceTypeTable, places) {
+    let res = []
+
+    // """""This big nested for-loop give each place a match score."""""
+    // The outer loop is to loop thru the places from query result
+    for (let i = 0; i < places.length; i++) {
+        // one place from the places
+        let place = places[i]
+
+        // the match score for this place
+        let value = 0
+
+        // the count is only incremented if the user has that type
+        let count = 0
+
+        // This inner loop is to loop thru each type this place have
+        for (let j = 0; j < place.types.length; j++) {
+            type = place.types[j]
+            let placeTypeValue = userPlaceTypeTable.get(type)
+            if (placeTypeValue != null) {
+                count ++
+                value += placeTypeValue[0] / placeTypeValue[1]
+            }
+        }
+
+        value += place.rating
+        count += 1
+        res.push([Math.round((value / count * 100)) / 100, place.name]) // Round to 2 decimal places
+    }
+
+    // This sorts the res array by score.
+    res.sort(function(a, b) {
+        let x = a[0]
+        let y = b[0]
+
+        if (x < y) {
+            return 1
+        }
+        if (x > y) {
+            return -1
+        }
+        return 0
+    })
+
+    return res
+}
 
 module.exports = {
     getAllUsers,
@@ -198,4 +259,5 @@ module.exports = {
     getUserById,
     gradeQuiz,
     getPercentage,
+    sortQueryResultByPreference,
 }
