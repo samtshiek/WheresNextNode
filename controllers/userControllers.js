@@ -196,7 +196,7 @@ const sortQueryResultByPreference = async (req, res) => {
     let places = req.body.results
     let userPlaceTypeTable = user.preference.placeType
 
-    let sortedPlaces = calculateMatchScore(userPlaceTypeTable, places)
+    let sortedPlaces = calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places)
 
     console.log(sortedPlaces)
     res.json(sortedPlaces)
@@ -206,7 +206,7 @@ const sortQueryResultByPreference = async (req, res) => {
 // """""Helper function to calculate and sort the places"""""
 // Takes in the user placeType preference table and list of place.
 // Returns a list of [matchScore, placeName]
-function calculateMatchScore(userPlaceTypeTable, places) {
+function calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places) {
     let res = []
 
     // """""This big nested for-loop give each place a match score."""""
@@ -231,7 +231,7 @@ function calculateMatchScore(userPlaceTypeTable, places) {
             }
         }
 
-        value += place.rating
+        value += place.rating * 2
         count += 1
         res.push([Math.round((value / count * 100)) / 100, place.name]) // Round to 2 decimal places
     }
