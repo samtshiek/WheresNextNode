@@ -89,7 +89,8 @@ const getUserById = async (req, res) => {
 
 // Store quiz result to DB
 const gradeQuiz = async (req, res) => {
-    let user = await User.findById('6369d6c04184bd98f8f9270e')//req.body.id)
+    console.log("test", req.body); 
+    let user = await User.findById(req.body.id)
     const gradeTable = {
         // For each scale (extroverted, outdoor, active, sensitive), we have two variables, sum and count in the DB.
         // E.g., extrovertedSum, extrovertedCount. When we need to know the percentage (how extroverted the user is)
@@ -148,7 +149,9 @@ const gradeQuiz = async (req, res) => {
         c10: [-1, -1, 6, -1],
         d10: [-1, -1, 0, -1], // Movie Theater 7
     }
-    const ansArray = ['a1', 'b2', 'c3', 'd4', 'a5', 'b6', 'c7', 'd8', 'a9', 'b10'] //req.body.ansArray
+    const ansArray = req.body.results;
+    console.log("array", req.body.results);
+
 
     // Get value from database
     extrovertedSum = user.preference.extrovertedSum
