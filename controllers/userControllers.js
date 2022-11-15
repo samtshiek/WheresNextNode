@@ -35,6 +35,45 @@ const createNewUser = async (req, res) => {
     }
 }
 
+const editUser = async (req, res) => {
+    try {
+        const salt = await bcrypt.genSalt(10)
+        const user = await User.findById(req.params.id)
+        if (!user) {
+            return res.status(204).json({ message: `No user matches ID ${req.params.id}.` })
+        }else{
+            const filter = { id: req.params.id };
+            const options = { upsert: false };
+            const updateDoc = {
+              $set: {
+                username: req.body.username,
+                password: await bcrypt.hash(req.body.password, salt),
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                age: req.body.age,
+                sex: req.body.sex,
+                city: req.body.city,
+                state: req.body.state,
+                country: req.body.country
+              },
+            };
+            const result = await User.updateOne(filter, updateDoc, options);
+
+
+        }
+       
+
+            
+
+        res.status(201).json(user)
+        console.log(user)
+    } catch (err) {
+        return res.status(500).json({ message: err.message })
+    }
+}
+        
+
+
 // Get a user by id
 const getUserById = async (req, res) => {
     try {
@@ -260,4 +299,5 @@ module.exports = {
     gradeQuiz,
     getPercentage,
     sortQueryResultByPreference,
+    editUser
 }
