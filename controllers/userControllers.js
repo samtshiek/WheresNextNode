@@ -17,6 +17,7 @@ const createNewUser = async (req, res) => {
             password: await bcrypt.hash(req.body.password, salt),
             firstName: req.body.firstName,
             lastName: req.body.lastName,
+            email:req.body.email,
             age: req.body.age,
             sex: req.body.sex,
             city: req.body.city,
@@ -77,9 +78,11 @@ const editUser = async (req, res) => {
 // Get a user by id
 const getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id)
+        let uID = req.params.id;
+        console.log("Getting user: ",uID);
+        const user = await User.findById(uID)
         if (!user) {
-            return res.status(204).json({ message: `No user matches ID ${req.params.id}.` })
+            return res.status(204).json({ message: `No user matches ID ${uID}.` })
         }
         res.json(user)
     } catch (err) {
