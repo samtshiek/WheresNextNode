@@ -39,16 +39,18 @@ const createNewUser = async (req, res) => {
 const editUser = async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
-        const user = await User.findById(req.params.id)
+        let user = await User.findById(req.body.id)
         if (!user) {
-            return res.status(204).json({ message: `No user matches ID ${req.params.id}.` })
+            return res.status(204).json({ message: `No user matches ID ${req.body.id}.` })
         }else{
-            const filter = { id: req.params.id };
+            const filter = { _id: req.body.id };
+            //const filter = { username: req.body.username};
+            console.log("Filter:",filter);
             const options = { upsert: false };
             const updateDoc = {
               $set: {
                 username: req.body.username,
-                password: await bcrypt.hash(req.body.password, salt),
+              //  password: await bcrypt.hash(req.body.password, salt),
                 firstName: req.body.firstName,
                 lastName: req.body.lastName,
                 age: req.body.age,
@@ -59,7 +61,9 @@ const editUser = async (req, res) => {
               },
             };
             const result = await User.updateOne(filter, updateDoc, options);
-
+            user = await User.findById(req.body.id)
+            console.log("Result of update:",result);
+            console.log("user updated", user);
 
         }
        
