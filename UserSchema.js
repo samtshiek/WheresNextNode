@@ -15,7 +15,7 @@ const preferenceSchema = new Schema({
     sensitiveSum: { type: Number, default: 0 },
     sensitiveCount: { type: Number, default: 0 },
     // Bar, Museum, Park, Restaurant, Coffee, Trail, Movie
-    placeType: { type: Map, of: Number, default: {} }
+    placeType: { type: Map, of: Array, default: {} }
 })
 
 const userSchema = new Schema({

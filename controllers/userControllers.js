@@ -17,6 +17,7 @@ const createNewUser = async (req, res) => {
             password: await bcrypt.hash(req.body.password, salt),
             firstName: req.body.firstName,
             lastName: req.body.lastName,
+            email:req.body.email,
             age: req.body.age,
             sex: req.body.sex,
             city: req.body.city,
@@ -35,12 +36,57 @@ const createNewUser = async (req, res) => {
     }
 }
 
+const editUser = async (req, res) => {
+    try {
+        const salt = await bcrypt.genSalt(10)
+        let user = await User.findById(req.body.id)
+        if (!user) {
+            return res.status(204).json({ message: `No user matches ID ${req.body.id}.` })
+        }else{
+            const filter = { _id: req.body.id };
+            //const filter = { username: req.body.username};
+            console.log("Filter:",filter);
+            const options = { upsert: false };
+            const updateDoc = {
+              $set: {
+                username: req.body.username,
+              //  password: await bcrypt.hash(req.body.password, salt),
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                age: req.body.age,
+                sex: req.body.sex,
+                city: req.body.city,
+                state: req.body.state,
+                country: req.body.country
+              },
+            };
+            const result = await User.updateOne(filter, updateDoc, options);
+            user = await User.findById(req.body.id)
+            console.log("Result of update:",result);
+            console.log("user updated", user);
+
+        }
+       
+
+            
+
+        res.status(201).json(user)
+        console.log(user)
+    } catch (err) {
+        return res.status(500).json({ message: err.message })
+    }
+}
+        
+
+
 // Get a user by id
 const getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id)
+        let uID = req.params.id;
+        console.log("Getting user: ",uID);
+        const user = await User.findById(uID)
         if (!user) {
-            return res.status(204).json({ message: `No user matches ID ${req.params.id}.` })
+            return res.status(204).json({ message: `No user matches ID ${uID}.` })
         }
         res.json(user)
     } catch (err) {
@@ -50,7 +96,8 @@ const getUserById = async (req, res) => {
 
 // Store quiz result to DB
 const gradeQuiz = async (req, res) => {
-    let user = await User.findById('6369d6c04184bd98f8f9270e')//req.body.id)
+    console.log("test", req.body); 
+    let user = await User.findById(req.body.id)
     const gradeTable = {
         // For each scale (extroverted, outdoor, active, sensitive), we have two variables, sum and count in the DB.
         // E.g., extrovertedSum, extrovertedCount. When we need to know the percentage (how extroverted the user is)
@@ -108,8 +155,20 @@ const gradeQuiz = async (req, res) => {
         b10: [-1, 10, 8, -1], // Trail 10
         c10: [-1, -1, 6, -1],
         d10: [-1, -1, 0, -1], // Movie Theater 7
+        
+        a11: [6, -1, 10, -1],
+        b11: [-1, 10, 8, -1], // Trail 10
+        c11: [-1, -1, 6, -1],
+        d11: [-1, -1, 0, -1], // Movie Theater 7
+
+        a12: [6, -1, 10, -1],
+        b12: [-1, 10, 8, -1], // Trail 10
+        c12: [-1, -1, 6, -1],
+        d12: [-1, -1, 0, -1], // Movie Theater 7
     }
-    const ansArray = ['a1', 'b2', 'c3', 'd4', 'a5', 'b6', 'c7', 'd8', 'a9', 'b10'] //req.body.ansArray
+    const ansArray = req.body.results;
+    console.log("array", req.body.results);
+
 
     // Get value from database
     extrovertedSum = user.preference.extrovertedSum
@@ -191,6 +250,67 @@ const getPercentage = async (req, res) => {
     }
 }
 
+const sortQueryResultByPreference = async (req, res) => {
+    let user = await User.findById(req.body.userId)
+    let places = req.body.results
+    let userPlaceTypeTable = user.preference.placeType
+
+    let sortedPlaces = calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places)
+
+    console.log(sortedPlaces)
+    res.json(sortedPlaces)
+}
+
+
+// """""Helper function to calculate and sort the places"""""
+// Takes in the user placeType preference table and list of place.
+// Returns a list of [matchScore, placeName]
+function calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places) {
+    let res = []
+
+    // """""This big nested for-loop give each place a match score."""""
+    // The outer loop is to loop thru the places from query result
+    for (let i = 0; i < places.length; i++) {
+        // one place from the places
+        let place = places[i]
+
+        // the match score for this place
+        let value = 0
+
+        // the count is only incremented if the user has that type
+        let count = 0
+
+        // This inner loop is to loop thru each type this place have
+        for (let j = 0; j < place.types.length; j++) {
+            type = place.types[j]
+            let placeTypeValue = userPlaceTypeTable.get(type)
+            if (placeTypeValue != null) {
+                count ++
+                value += placeTypeValue[0] / placeTypeValue[1]
+            }
+        }
+
+        value += place.rating * 2
+        count += 1
+        res.push([Math.round((value / count * 100)) / 100, place.name]) // Round to 2 decimal places
+    }
+
+    // This sorts the res array by score.
+    res.sort(function(a, b) {
+        let x = a[0]
+        let y = b[0]
+
+        if (x < y) {
+            return 1
+        }
+        if (x > y) {
+            return -1
+        }
+        return 0
+    })
+
+    return res
+}
 
 module.exports = {
     getAllUsers,
@@ -198,4 +318,6 @@ module.exports = {
     getUserById,
     gradeQuiz,
     getPercentage,
+    sortQueryResultByPreference,
+    editUser
 }
