@@ -155,6 +155,16 @@ const gradeQuiz = async (req, res) => {
         b10: [-1, 10, 8, -1], // Trail 10
         c10: [-1, -1, 6, -1],
         d10: [-1, -1, 0, -1], // Movie Theater 7
+        
+        a11: [6, -1, 10, -1],
+        b11: [-1, 10, 8, -1], // Trail 10
+        c11: [-1, -1, 6, -1],
+        d11: [-1, -1, 0, -1], // Movie Theater 7
+
+        a12: [6, -1, 10, -1],
+        b12: [-1, 10, 8, -1], // Trail 10
+        c12: [-1, -1, 6, -1],
+        d12: [-1, -1, 0, -1], // Movie Theater 7
     }
     const ansArray = req.body.results;
     console.log("array", req.body.results);
