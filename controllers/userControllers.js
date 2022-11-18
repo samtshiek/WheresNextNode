@@ -36,7 +36,7 @@ const createNewUser = async (req, res) => {
     }
 }
 
-const editUser = async (req, res) => {
+ const editUser = async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
         let user = await User.findById(req.body.id)
@@ -44,28 +44,46 @@ const editUser = async (req, res) => {
             return res.status(204).json({ message: `No user matches ID ${req.body.id}.` })
         }else{
             const filter = { _id: req.body.id };
-            //const filter = { username: req.body.username};
+            let pass = String(req.body.password);
             console.log("Filter:",filter);
             const options = { upsert: false };
-            const updateDoc = {
-              $set: {
-                username: req.body.username,
-              //  password: await bcrypt.hash(req.body.password, salt),
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
-                age: req.body.age,
-                sex: req.body.sex,
-                city: req.body.city,
-                state: req.body.state,
-                country: req.body.country
-              },
-            };
+            let updateDoc = {
+                $set: {
+                  username: req.body.username,
+                  firstName: req.body.firstName,
+                  lastName: req.body.lastName,
+                  age: req.body.age,
+                  sex: req.body.sex,
+                  city: req.body.city,
+                  state: req.body.state,
+                  country: req.body.country
+                },
+              };
+            if(pass.length != 0){
+                console.log("if clause executes");
+                 updateDoc = {
+                    $set: {
+                      username: req.body.username,
+                      password: await bcrypt.hash(req.body.password, salt),
+                      firstName: req.body.firstName,
+                      lastName: req.body.lastName,
+                      age: req.body.age,
+                      sex: req.body.sex,
+                      city: req.body.city,
+                      state: req.body.state,
+                      country: req.body.country
+                    },
+                };
+            } 
+            
+            
             const result = await User.updateOne(filter, updateDoc, options);
             user = await User.findById(req.body.id)
             console.log("Result of update:",result);
             console.log("user updated", user);
 
         }
+    
        
 
             
@@ -75,7 +93,7 @@ const editUser = async (req, res) => {
     } catch (err) {
         return res.status(500).json({ message: err.message })
     }
-}
+} 
         
 
 
