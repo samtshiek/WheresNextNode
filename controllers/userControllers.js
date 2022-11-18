@@ -185,50 +185,60 @@ const gradeQuiz = async (req, res) => {
         d12: [-1, -1, 0, -1], // Movie Theater 7
     }
     const ansArray = req.body.results;
-    console.log("array", req.body.results);
 
-
-    // Get value from database
-    extrovertedSum = user.preference.extrovertedSum
-    extrovertedCount = user.preference.extrovertedCount
-    outdoorSum = user.preference.outdoorSum
-    outdoorCount = user.preference.outdoorCount
-    activeSum = user.preference.activeSum
-    activeCount = user.preference.activeCount
-    sensitiveSum = user.preference.sensitiveSum
-    sensitiveCount = user.preference.sensitiveCount
+    let extroverted = 0
+    let outdoor = 0
+    let active = 0
+    let sensitive = 0
+    let extrovertedCount = 0
+    let outdoorCount = 0
+    let activeCount = 0
+    let sensitiveCount = 0
 
     ansArray.forEach(function(item) {
         // choice: [extroverted, outdoor, active, sensitive]
         grade = gradeTable[item]
         if (grade[0] != -1) {
-            extrovertedSum += grade[0]
+            extroverted += grade[0]
             extrovertedCount += 1
         }
         if (grade[1] != -1) {
-            outdoorSum += grade[1]
+            outdoor += grade[1]
             outdoorCount += 1
         }
         if (grade[2] != -1) {
-            activeSum += grade[2]
+            active += grade[2]
             activeCount += 1
         }
         if (grade[3] != -1) {
-            sensitiveSum += grade[3]
+            sensitive += grade[3]
             sensitiveCount += 1
         }
     })
 
-    user.preference.extrovertedSum = extrovertedSum
-    user.preference.outdoorSum = outdoorSum
-    user.preference.activeSum = activeSum
-    user.preference.sensitiveSum = sensitiveSum
-    user.preference.extrovertedCount = extrovertedCount
-    user.preference.outdoorCount = outdoorCount
-    user.preference.activeCount = activeCount
-    user.preference.sensitiveCount = sensitiveCount
+    // Prevent zero division error
+    user.preference.extroverted = extrovertedCount > 0 ? extroverted / extrovertedCount : 0
+    user.preference.outdoor = outdoorCount > 0 ? outdoor / outdoorCount : 0
+    user.preference.active = activeCount > 0 ? active / activeCount : 0
+    user.preference.sensitive = sensitiveCount > 0 ? sensitive / sensitiveCount : 0
+
+    assignPlaceTypeValueBasedOnUserCharacteristics(user)
     user.save();
     res.json(user)
+}
+
+function assignPlaceTypeValueBasedOnUserCharacteristics(user) {
+    if (user.preference.extroverted > 7.5) {
+        // another for loop to modify user place type preference
+    } else if (user.preference.extroverted > 5){
+        // another for loop to modify user place type preference
+    } else if (user.preference.extroverted > 2.5){
+        // another for loop to modify user place type preference
+    } else {
+        // another for loop to modify user place type preference
+    }
+
+    // same for outdoor, active, and sensitive
 }
 
 const getPercentage = async (req, res) => {
