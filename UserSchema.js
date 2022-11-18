@@ -16,6 +16,7 @@ const preferenceSchema = new Schema({
 
 const userSchema = new Schema({
     _id: { type: Schema.Types.ObjectId, required: true, auto: true },
+    hasTakenQuiz: {type: Boolean, default: false},
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     firstName: { type: String, required: true },

@@ -223,6 +223,7 @@ const gradeQuiz = async (req, res) => {
     user.preference.sensitive = sensitiveCount > 0 ? sensitive / sensitiveCount : 0
 
     assignPlaceTypeValueBasedOnUserCharacteristics(user)
+    user.hasTakenQuiz = true
     user.save();
     res.json(user)
 }
