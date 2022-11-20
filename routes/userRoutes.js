@@ -10,6 +10,7 @@ router.post("/create", User.createNewUser);
 router.post("/submit-quiz", User.gradeQuiz);
 router.post("/get-recommendations", User.sortQueryResultByPreference);
 router.post("/update_user/", User.editUser);
+router.post("/get-places", User.getPlaceList);
 
 
 module.exports = router;

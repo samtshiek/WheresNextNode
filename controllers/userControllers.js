@@ -1,6 +1,52 @@
 const User = require("../UserSchema")
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
+const { response } = require("express");
 require('dotenv').config();
+const fetch = require('../node_modules/node-fetch');
+
+//Send place results
+const getPlaceList = async (req, res) => {
+    
+    console.log("Object from angular: ", req.body);
+
+    const type = '';
+    const address = req.body.address;
+    const keyword = req.body.keyword;
+    const radius = req.body.radius;
+    let latitude = '';
+    let longitude = '';
+    let placesObject = undefined;
+    let geoObject = undefined;
+    
+    const longlatPromise = fetch('https://maps.googleapis.com/maps/api/geocode/json?address='+ address + '&key=AIzaSyDlcVUDD3WhvXXA2XvrTflCjMn0VO3Bam8');
+    
+    longlatPromise
+    .then(response => response.json())
+    .then(response => {
+        geoObject = response;
+        latitude = geoObject.results[0].geometry.location.lat;
+        longitude = geoObject.results[0].geometry.location.lng;
+        console.log("Lat Long promise result: ", geoObject.results[0].geometry.location.lat + '/' + geoObject.results[0].geometry.location.lng);
+}, rejected => {console.log("Rejected: ", rejected)})
+    .then(() => {
+        const placePromise = fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword='+ keyword +'&location='+ latitude +'%2C'+ longitude +'&radius='+ radius +'&type='+ type +'&key=AIzaSyBKuuHUPZ_BDWlCnLSYPylkTCd7LQpsU6s');
+        placePromise
+        .then(response => response.json())
+        .then(response => {
+
+            placesObject = response;
+            let geoPlace = {
+                geo: geoObject,
+                places: placesObject
+            }
+            
+            console.log("Places final result: ", placesObject);
+            res.json(geoPlace);
+            
+        })
+    })
+
+}
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -348,5 +394,6 @@ module.exports = {
     gradeQuiz,
     getPercentage,
     sortQueryResultByPreference,
-    editUser
+    editUser,
+    getPlaceList
 }
