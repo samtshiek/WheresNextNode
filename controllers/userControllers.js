@@ -6,13 +6,13 @@ const fetch = require('../node_modules/node-fetch');
 
 //Send place results
 const getPlaceList = async (req, res) => {
-    
     console.log("Object from angular: ", req.body);
 
     const type = '';
     const address = req.body.address;
     const keyword = req.body.keyword;
     const radius = req.body.radius;
+    const userId = req.body.userId;
     let latitude = '';
     let longitude = '';
     let placesObject = undefined;
@@ -32,15 +32,17 @@ const getPlaceList = async (req, res) => {
         const placePromise = fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword='+ keyword +'&location='+ latitude +'%2C'+ longitude +'&radius='+ radius +'&type='+ type +'&key=AIzaSyBKuuHUPZ_BDWlCnLSYPylkTCd7LQpsU6s');
         placePromise
         .then(response => response.json())
-        .then(response => {
+        .then(async response => {
 
             placesObject = response;
+
+            
+            let sortedPlaces = await sortQueryResultByPreference(placesObject, userId)
+            placesObject.results = sortedPlaces
             let geoPlace = {
                 geo: geoObject,
                 places: placesObject
             }
-            
-            console.log("Places final result: ", placesObject);
             res.json(geoPlace);
             
         })
@@ -325,15 +327,12 @@ const getPercentage = async (req, res) => {
     }
 }
 
-const sortQueryResultByPreference = async (req, res) => {
-    let user = await User.findById(req.body.userId)
-    let places = req.body.results
+async function sortQueryResultByPreference(places, userId) {
+    let user = await User.findById(userId)
     let userPlaceTypeTable = user.preference.placeType
-
-    let sortedPlaces = calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places)
-
+    let sortedPlaces = calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places.results)
     console.log(sortedPlaces)
-    res.json(sortedPlaces)
+    return sortedPlaces
 }
 
 
@@ -348,7 +347,6 @@ function calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places) {
     for (let i = 0; i < places.length; i++) {
         // one place from the places
         let place = places[i]
-
         // the match score for this place
         let value = 0
 
@@ -367,13 +365,14 @@ function calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places) {
 
         value += place.rating * 2
         count += 1
-        res.push([Math.round((value / count * 100)) / 100, place.name]) // Round to 2 decimal places
+        place["matchScore"] = Math.round((value / count * 100)) / 100
+        res.push(place) // Round to 2 decimal places
     }
 
     // This sorts the res array by score.
     res.sort(function(a, b) {
-        let x = a[0]
-        let y = b[0]
+        let x = a.matchScore
+        let y = b.matchScore
 
         if (x < y) {
             return 1
