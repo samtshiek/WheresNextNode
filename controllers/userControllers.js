@@ -79,7 +79,7 @@ const createNewUser = async (req, res) => {
         if (err.code === 11000) {
             return res.status(400).json({ message: 'The username is already registered' })
         }
-        return res.status(400).json({ message: err.message })
+        return res.status(500).json({ message: err.message })
     }
 }
 
@@ -141,7 +141,31 @@ const createNewUser = async (req, res) => {
         return res.status(500).json({ message: err.message })
     }
 } 
-        
+      
+const getPlace = async (req, res) => {
+    const id = placeId;
+    let placesObject = undefined;
+    console.log("getplace Id: ",id);
+     try {
+      
+
+
+    const idPromise = fetch('https://maps.googleapis.com/maps/api/place/details/&place_id='+ id + '&key=AIzaSyDlcVUDD3WhvXXA2XvrTflCjMn0VO3Bam8');
+    
+   idPromise
+        .then(response => response.json())
+        .then(async response => {
+
+            placesObject = response;
+            console.log(placesObject);
+
+            res.json(placesObject);
+            
+        },rejected => {console.log("Rejected: ", rejected)});
+            } catch (err) {
+        return res.status(500).json({ message: err.message })
+    } 
+}
 
 
 // Get a user by id
@@ -487,5 +511,6 @@ module.exports = {
     getPercentage,
     sortQueryResultByPreference,
     editUser,
-    getPlaceList
+    getPlaceList,
+    getPlace
 }
