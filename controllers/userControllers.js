@@ -80,7 +80,7 @@ const createNewUser = async (req, res) => {
         if (err.code === 11000) {
             return res.status(400).json({ message: 'The username is already registered' })
         }
-        return res.status(400).json({ message: err.message })
+        return res.status(500).json({ message: err.message })
     }
 }
 
