@@ -143,17 +143,17 @@ const createNewUser = async (req, res) => {
 } 
       
 const getPlace = async (req, res) => {
-    const id = placeId;
+    const placeId = req.params.placeId;
     let placesObject = undefined;
-    console.log("getplace Id: ",id);
+    console.log("getplace Id: ",placeId);
      try {
       
 
 
-    const idPromise = fetch('https://maps.googleapis.com/maps/api/place/details/&place_id='+ id + '&key=AIzaSyDlcVUDD3WhvXXA2XvrTflCjMn0VO3Bam8');
+    const idPromise = fetch('https://maps.googleapis.com/maps/api/place/details/json?place_id='+ placeId + '&key=AIzaSyDlcVUDD3WhvXXA2XvrTflCjMn0VO3Bam8');
     
    idPromise
-        .then(response => response.json())
+        .then(response => response)
         .then(async response => {
 
             placesObject = response;

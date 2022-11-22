@@ -6,7 +6,7 @@ const auth = require("../middleware/auth")
 router.get("/", User.getAllUsers);
 router.get("/:id", User.getUserById);
 router.get("/:id/:scale", User.getPercentage);
-router.get("/get-place/:placeId", User.getPlace);
+router.get("/get-place/id/:placeId", User.getPlace);
 router.post("/create", User.createNewUser);
 router.post("/submit-quiz", User.gradeQuiz);
 router.post("/get-recommendations", User.sortQueryResultByPreference);
