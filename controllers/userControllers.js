@@ -1,6 +1,53 @@
 const User = require("../UserSchema")
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
+const { response } = require("express");
 require('dotenv').config();
+const fetch = require('../node_modules/node-fetch');
+
+//Send place results
+const getPlaceList = async (req, res) => {
+    console.log("Object from angular: ", req.body);
+
+    const type = '';
+    const address = req.body.address;
+    const keyword = req.body.keyword;
+    const radius = req.body.radius;
+    const userId = req.body.userId;
+    let latitude = '';
+    let longitude = '';
+    let placesObject = undefined;
+    let geoObject = undefined;
+    
+    const longlatPromise = fetch('https://maps.googleapis.com/maps/api/geocode/json?address='+ address + '&key=AIzaSyDlcVUDD3WhvXXA2XvrTflCjMn0VO3Bam8');
+    
+    longlatPromise
+    .then(response => response.json())
+    .then(response => {
+        geoObject = response;
+        latitude = geoObject.results[0].geometry.location.lat;
+        longitude = geoObject.results[0].geometry.location.lng;
+        console.log("Lat Long promise result: ", geoObject.results[0].geometry.location.lat + '/' + geoObject.results[0].geometry.location.lng);
+}, rejected => {console.log("Rejected: ", rejected)})
+    .then(() => {
+        const placePromise = fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword='+ keyword +'&location='+ latitude +'%2C'+ longitude +'&radius='+ radius +'&type='+ type +'&key=AIzaSyBKuuHUPZ_BDWlCnLSYPylkTCd7LQpsU6s');
+        placePromise
+        .then(response => response.json())
+        .then(async response => {
+
+            placesObject = response;
+
+            let sortedPlaces = await sortQueryResultByPreference(placesObject.results, userId)
+            placesObject.results = sortedPlaces
+            let geoPlace = {
+                geo: geoObject,
+                places: placesObject
+            }
+            res.json(geoPlace);
+            
+        })
+    })
+
+}
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -32,11 +79,11 @@ const createNewUser = async (req, res) => {
         if (err.code === 11000) {
             return res.status(400).json({ message: 'The username is already registered' })
         }
-        return res.status(400).json({ message: err.message })
+        return res.status(500).json({ message: err.message })
     }
 }
 
-const editUser = async (req, res) => {
+ const editUser = async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
         let user = await User.findById(req.body.id)
@@ -44,28 +91,46 @@ const editUser = async (req, res) => {
             return res.status(204).json({ message: `No user matches ID ${req.body.id}.` })
         }else{
             const filter = { _id: req.body.id };
-            //const filter = { username: req.body.username};
+            let pass = String(req.body.password);
             console.log("Filter:",filter);
             const options = { upsert: false };
-            const updateDoc = {
-              $set: {
-                username: req.body.username,
-              //  password: await bcrypt.hash(req.body.password, salt),
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
-                age: req.body.age,
-                sex: req.body.sex,
-                city: req.body.city,
-                state: req.body.state,
-                country: req.body.country
-              },
-            };
+            let updateDoc = {
+                $set: {
+                  username: req.body.username,
+                  firstName: req.body.firstName,
+                  lastName: req.body.lastName,
+                  age: req.body.age,
+                  sex: req.body.sex,
+                  city: req.body.city,
+                  state: req.body.state,
+                  country: req.body.country
+                },
+              };
+            if(pass.length != 0){
+                console.log("if clause executes");
+                 updateDoc = {
+                    $set: {
+                      username: req.body.username,
+                      password: await bcrypt.hash(req.body.password, salt),
+                      firstName: req.body.firstName,
+                      lastName: req.body.lastName,
+                      age: req.body.age,
+                      sex: req.body.sex,
+                      city: req.body.city,
+                      state: req.body.state,
+                      country: req.body.country
+                    },
+                };
+            } 
+            
+            
             const result = await User.updateOne(filter, updateDoc, options);
             user = await User.findById(req.body.id)
             console.log("Result of update:",result);
             console.log("user updated", user);
 
         }
+    
        
 
             
@@ -75,8 +140,33 @@ const editUser = async (req, res) => {
     } catch (err) {
         return res.status(500).json({ message: err.message })
     }
+} 
+      
+const getPlace = async (req, res) => {
+    const placeId = req.params.placeId;
+    let placesObject = undefined;
+    console.log("getplace Id: ",placeId);
+
+     try {
+      
+
+
+    const idPromise = fetch('https://maps.googleapis.com/maps/api/place/details/json?fields=name&place_id='+ placeId + '&key=AIzaSyDlcVUDD3WhvXXA2XvrTflCjMn0VO3Bam8');
+    
+   idPromise
+        .then(response => response.json())
+        .then(async response => {
+
+            placesObject = response;
+            console.log(placesObject);
+
+            res.json(placesObject);
+            
+        },rejected => {console.log("Rejected: ", rejected)});
+            } catch (err) {
+        return res.status(500).json({ message: err.message })
+    } 
 }
-        
 
 
 // Get a user by id
@@ -96,8 +186,9 @@ const getUserById = async (req, res) => {
 
 // Store quiz result to DB
 const gradeQuiz = async (req, res) => {
-    console.log("test", req.body); 
+    // console.log("test", req.body); 
     let user = await User.findById(req.body.id)
+    user.preference.quizResult.clear()
     const gradeTable = {
         // For each scale (extroverted, outdoor, active, sensitive), we have two variables, sum and count in the DB.
         // E.g., extrovertedSum, extrovertedCount. When we need to know the percentage (how extroverted the user is)
@@ -157,60 +248,168 @@ const gradeQuiz = async (req, res) => {
         d10: [-1, -1, 0, -1], // Movie Theater 7
         
         a11: [6, -1, 10, -1],
-        b11: [-1, 10, 8, -1], // Trail 10
+        b11: [-1, 10, 8, -1], 
         c11: [-1, -1, 6, -1],
-        d11: [-1, -1, 0, -1], // Movie Theater 7
+        d11: [-1, -1, 0, -1], 
 
         a12: [6, -1, 10, -1],
-        b12: [-1, 10, 8, -1], // Trail 10
+        b12: [-1, 10, 8, -1], 
         c12: [-1, -1, 6, -1],
-        d12: [-1, -1, 0, -1], // Movie Theater 7
+        d12: [-1, -1, 0, -1],
+        
+        a13: [6, -1, 10, -1],
+        b13: [-1, 10, 8, -1], 
+        c13: [-1, -1, 6, -1],
+        d13: [-1, -1, 0, -1],
+
+        a14: [6, -1, 10, -1],
+        b14: [-1, 10, 8, -1], 
+        c14: [-1, -1, 6, -1],
+        d14: [-1, -1, 0, -1],
     }
     const ansArray = req.body.results;
-    console.log("array", req.body.results);
 
-
-    // Get value from database
-    extrovertedSum = user.preference.extrovertedSum
-    extrovertedCount = user.preference.extrovertedCount
-    outdoorSum = user.preference.outdoorSum
-    outdoorCount = user.preference.outdoorCount
-    activeSum = user.preference.activeSum
-    activeCount = user.preference.activeCount
-    sensitiveSum = user.preference.sensitiveSum
-    sensitiveCount = user.preference.sensitiveCount
+    let extroverted = 0
+    let outdoor = 0
+    let active = 0
+    let sensitive = 0
+    let extrovertedCount = 0
+    let outdoorCount = 0
+    let activeCount = 0
+    let sensitiveCount = 0
 
     ansArray.forEach(function(item) {
         // choice: [extroverted, outdoor, active, sensitive]
         grade = gradeTable[item]
         if (grade[0] != -1) {
-            extrovertedSum += grade[0]
+            extroverted += grade[0]
             extrovertedCount += 1
         }
         if (grade[1] != -1) {
-            outdoorSum += grade[1]
+            outdoor += grade[1]
             outdoorCount += 1
         }
         if (grade[2] != -1) {
-            activeSum += grade[2]
+            active += grade[2]
             activeCount += 1
         }
         if (grade[3] != -1) {
-            sensitiveSum += grade[3]
+            sensitive += grade[3]
             sensitiveCount += 1
         }
     })
 
-    user.preference.extrovertedSum = extrovertedSum
-    user.preference.outdoorSum = outdoorSum
-    user.preference.activeSum = activeSum
-    user.preference.sensitiveSum = sensitiveSum
-    user.preference.extrovertedCount = extrovertedCount
-    user.preference.outdoorCount = outdoorCount
-    user.preference.activeCount = activeCount
-    user.preference.sensitiveCount = sensitiveCount
+    // Prevent zero division error
+    user.preference.extroverted = extrovertedCount > 0 ? extroverted / extrovertedCount : 0
+    user.preference.outdoor = outdoorCount > 0 ? outdoor / outdoorCount : 0
+    user.preference.active = activeCount > 0 ? active / activeCount : 0
+    user.preference.sensitive = sensitiveCount > 0 ? sensitive / sensitiveCount : 0
+    user = assignPlaceTypeValueBasedOnUserCharacteristics(user)
+    user.hasTakenQuiz = true
     user.save();
     res.json(user)
+}
+
+function helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user) {
+    if (addOne) {
+        for (let i = 0; i < addOne.length; i++) {
+            console.log(addOne[i], user.preference.quizResult.get(addOne[i]))
+            if (user.preference.quizResult.get(addOne[i])) {
+                original = user.preference.quizResult.get(addOne[i])
+                user.preference.quizResult.set(addOne[i], original + 1)
+            } else {
+                user.preference.quizResult.set(addOne[i], 1)
+            }
+        }
+    }
+    if (addHalf) {
+        for (let i = 0; i < addHalf.length; i++) {
+            if (user.preference.quizResult.get(addHalf[i])) {
+                original = user.preference.quizResult.get(addHalf[i])
+                user.preference.quizResult.set(addHalf[i], original + 0.5)
+            } else {
+                user.preference.quizResult.set(addHalf[i], 0.5)
+            }
+        }
+    }
+    return user
+}
+
+function assignPlaceTypeValueBasedOnUserCharacteristics(user) {
+    let extroverted = user.preference.extroverted
+    let outdoor = user.preference.outdoor
+    let active = user.preference.active
+    let sensitive = user.preference.sensitive
+
+    // extroverted
+    if (extroverted > 7.5) {
+        let addOne = ["casino", "bar", "night_club", "amusement_park", "jewelry_store", "movie_theater", "rv_park", "spa", "beauty_salon", "hair_care", "laundry", "church", "hindu_temple", "synagogue"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
+
+    } else if (extroverted > 5) {
+        let addOne = ["bowling_alley", "movie_theater", "amusement_park", "beauty_salon", "hair_care", "bakery"]
+        let addHalf = ["bar", "night_club", "rv_park", "laundry", "church", "hindu_temple", "synagogue"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
+    } else if (extroverted > 2.5) {
+        let addOne = ["bakery","aquarium","meal_takeaway","meal_delivery","liquor_store","home_goods_store"]
+        let addHalf = ["cafe", "library", "museum"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
+    } else {
+        let addOne = ["movie_rental","book_store","meal_delivery"]
+        let addHalf = ["cafe", "library"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
+    }
+    
+    // outdoor
+    if (outdoor > 7.5) {
+        let addOne = ["tourist_attraction", "lodging", "zoo", "travel_agency", "campground", "park", "amusement_park", "light_rail_station", "airport", "bus_station", "car_rental", "taxi_stand", "transit_station", "travel_agency", "subway_station", "gas_station", "train_station", "embassy"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
+    } else if (outdoor > 5) {
+        let addOne = ["zoo", "park"]
+        let addHalf = ["tourist_attraction", "light_rail_station", "airport", "bus_station", "subway_station", "gas_station", "train_station"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
+    } else if (outdoor > 2.5) {
+        let addOne = ["museum", "movie_rental"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
+    } else {
+        let addOne = ["book_store", "meal_delivery", "movie_rental"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
+    }
+    
+    // active
+    if (active > 7.5){
+        let addOne = ["physiotherapist", "bicycle_store", "gym", "stadium", "amusement_park", "restaurant", "spa"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
+    } else if (active > 5) {
+        let addOne = ["bowling_alley", "restaurant", "shopping_mall", "clothing_store", "shoe_store", "furniture_store", "park", "home_goods_store"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
+    } else if (active > 2.5) {
+        let addOne = ["meal_takeaway", "clothing_store", "spa", "shoe_store", "electronics_store", "supermarket", "store"]
+        let addHalf = ["department_store", "convenience_store"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
+    } else {
+        let addOne = ["meal_delivery", "movie_rental"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
+    }
+
+    // sensitive
+    if (sensitive > 7.5) {
+        let addOne = ["florist", "museum", "aquarium", "pet_store", "art_gallery", "bakery", "painter", "zoo", "church", "hindu_temple", "synagogue", "jewelry_store", "veterinary_care", "drugstore"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
+    } else if (sensitive > 5) {
+        let addOne = ["park", "bakery", "aquarium", "art_gallery", "painter", "zoo"]
+        let addHalf = ["museum", "pet_store", "drugstore"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
+    } else if (sensitive > 2.5) {
+        let addHalf = ["cafe", "liquor_store", "bar"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(null, addHalf, user)
+
+    } else {
+        let addOne = ["department_store", "university", "city_hall", "supermarket", "courthouse", "school", "local_government_office", "insurance_agency", "liquor_store", "bar"]
+        user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
+    }
+    console.log(user)
+    return user
 }
 
 const getPercentage = async (req, res) => {
@@ -250,30 +449,26 @@ const getPercentage = async (req, res) => {
     }
 }
 
-const sortQueryResultByPreference = async (req, res) => {
-    let user = await User.findById(req.body.userId)
-    let places = req.body.results
-    let userPlaceTypeTable = user.preference.placeType
+async function sortQueryResultByPreference(places, userId) {
+    let user = await User.findById(userId)
 
-    let sortedPlaces = calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places)
-
+    let sortedPlaces = calculateMatchScoreAndSortByMatchScore(user, places)
     console.log(sortedPlaces)
-    res.json(sortedPlaces)
+    return sortedPlaces
 }
 
 
 // """""Helper function to calculate and sort the places"""""
 // Takes in the user placeType preference table and list of place.
 // Returns a list of [matchScore, placeName]
-function calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places) {
+function calculateMatchScoreAndSortByMatchScore(user, places) {
     let res = []
-
+    let userPlaceTypeTable = user.preference.placeType
     // """""This big nested for-loop give each place a match score."""""
     // The outer loop is to loop thru the places from query result
     for (let i = 0; i < places.length; i++) {
         // one place from the places
         let place = places[i]
-
         // the match score for this place
         let value = 0
 
@@ -284,21 +479,28 @@ function calculateMatchScoreAndSortByMatchScore(userPlaceTypeTable, places) {
         for (let j = 0; j < place.types.length; j++) {
             type = place.types[j]
             let placeTypeValue = userPlaceTypeTable.get(type)
+            let quizResultValue = user.preference.quizResult.get(type)
             if (placeTypeValue != null) {
+                console.log(placeTypeValue)
                 count ++
                 value += placeTypeValue[0] / placeTypeValue[1]
+                if (quizResultValue) {
+                    value += quizResultValue
+                }
             }
         }
-
         value += place.rating * 2
         count += 1
-        res.push([Math.round((value / count * 100)) / 100, place.name]) // Round to 2 decimal places
+        place["matchScore"] = Math.round((value / count * 100)) / 100
+        if (place["matchScore"]) {
+            res.push(place) // Round to 2 decimal places
+        }
     }
 
     // This sorts the res array by score.
     res.sort(function(a, b) {
-        let x = a[0]
-        let y = b[0]
+        let x = a.matchScore
+        let y = b.matchScore
 
         if (x < y) {
             return 1
@@ -319,5 +521,7 @@ module.exports = {
     gradeQuiz,
     getPercentage,
     sortQueryResultByPreference,
-    editUser
+    editUser,
+    getPlaceList,
+    getPlace
 }

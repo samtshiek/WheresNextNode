@@ -3,23 +3,22 @@ const Schema = mongoose.Schema;
 
 const preferenceSchema = new Schema({
     // Extroverted
-    extrovertedSum: { type: Number, default: 0 },
-    extrovertedCount: { type: Number, default: 0 },
+    extroverted: { type: Number, default: 0 },
     // Outdoor
-    outdoorSum: { type: Number, default: 0 },
-    outdoorCount: { type: Number, default: 0 },
+    outdoor: { type: Number, default: 0 },
     // Active
-    activeSum: { type: Number, default: 0 },
-    activeCount: { type: Number, default: 0 },
+    active: { type: Number, default: 0 },
     // Sensitive
-    sensitiveSum: { type: Number, default: 0 },
-    sensitiveCount: { type: Number, default: 0 },
+    sensitive: { type: Number, default: 0 },
     // Bar, Museum, Park, Restaurant, Coffee, Trail, Movie
-    placeType: { type: Map, of: Array, default: {} }
+    placeType: { type: Map, of: Array, default: {} },
+    quizResult: {type: Map, of: Number, default: {}},
+    favoritePlaces: { type: Array }
 })
 
 const userSchema = new Schema({
     _id: { type: Schema.Types.ObjectId, required: true, auto: true },
+    hasTakenQuiz: {type: Boolean, default: false},
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     firstName: { type: String, required: true },
