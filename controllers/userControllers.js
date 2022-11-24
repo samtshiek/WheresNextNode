@@ -4,14 +4,15 @@ const { response } = require("express");
 require('dotenv').config();
 const fetch = require('../node_modules/node-fetch');
 
+let address = '';
+let radius = '';
+
 //Send place results
 const getPlaceList = async (req, res) => {
-    console.log("Object from angular: ", req.body);
+    //console.log("Object from angular: ", req.body);
 
     const type = '';
-    const address = req.body.address;
-    const keyword = req.body.keyword;
-    const radius = req.body.radius;
+    const keyword = '';
     const userId = req.body.userId;
     let latitude = '';
     let longitude = '';
@@ -186,6 +187,10 @@ const getUserById = async (req, res) => {
 
 // Store quiz result to DB
 const gradeQuiz = async (req, res) => {
+
+    address = req.body.address;
+    radius = req.body.radius;
+
     // console.log("test", req.body); 
     let user = await User.findById(req.body.id)
     user.preference.quizResult.clear()
