@@ -96,7 +96,7 @@ const createNewUser = async (req, res) => {
             const options = { upsert: false };
             let updateDoc = {
                 $set: {
-                  username: req.body.username,
+                 // username: req.body.username,
                   firstName: req.body.firstName,
                   lastName: req.body.lastName,
                   age: req.body.age,
@@ -107,10 +107,10 @@ const createNewUser = async (req, res) => {
                 },
               };
             if(pass.length != 0){
-                console.log("if clause executes");
+                
                  updateDoc = {
                     $set: {
-                      username: req.body.username,
+                     // username: req.body.username,
                       password: await bcrypt.hash(req.body.password, salt),
                       firstName: req.body.firstName,
                       lastName: req.body.lastName,
