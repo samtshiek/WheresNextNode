@@ -4,6 +4,8 @@ const { response } = require("express");
 require('dotenv').config();
 const fetch = require('../node_modules/node-fetch');
 
+const detailsKEY = process.env.detailsKEY;
+
 //Send place results
 const getPlaceList = async (req, res) => {
     //console.log("Object from angular: ", req.body);
@@ -151,7 +153,7 @@ const getPlace = async (req, res) => {
       
 
 
-    const idPromise = fetch('https://maps.googleapis.com/maps/api/place/details/json?fields=name%2Cadr_address%2Cvicinity%2cphoto%2Ccurrent_opening_hours%2Cformatted_phone_number%2cicon%2Curl%2Crating%2Creviews%2Cprice_level&place_id='+ placeId + '&key=keygoeshere');
+    const idPromise = fetch('https://maps.googleapis.com/maps/api/place/details/json?fields=name%2Cadr_address%2Cvicinity%2cphoto%2Ccurrent_opening_hours%2Cformatted_phone_number%2cicon%2Curl%2Crating%2Creviews%2Cprice_level&place_id='+ placeId + '&key='+detailsKEY);
     
    idPromise
         .then(response => response.json())
