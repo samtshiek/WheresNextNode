@@ -453,7 +453,8 @@ const getPercentage = async (req, res) => {
 async function sortQueryResultByPreference(places, userId) {
     let user = await User.findById(userId)
 
-    let sortedPlaces = calculateMatchScoreAndSortByMatchScore(user, places)
+    let sortedPlaces = altCalculateMatchScoreAndSortByMatchScore(user, places)
+    //let sortedPlaces = calculateMatchScoreAndSortByMatchScore(user, places)
     console.log(sortedPlaces)
     return sortedPlaces
 }
@@ -511,6 +512,73 @@ function calculateMatchScoreAndSortByMatchScore(user, places) {
         }
         return 0
     })
+
+    return res
+}
+
+//Alternative match score method to not include businesses that
+//do not have user types in the place list
+function altCalculateMatchScoreAndSortByMatchScore(user, places) {
+    console.log("Places coming in: ", places);
+    let res = []
+    let userPlaceTypeTable = user.preference.placeType
+    // """""This big nested for-loop give each place a match score."""""
+    // The outer loop is to loop thru the places from query result
+    for (let i = 0; i < places.length; i++) {
+        // one place from the places
+        let place = places[i]
+        // the match score for this place
+        let value = 0
+
+        // the count is only incremented if the user has that type
+        let count = 0
+        // boolean to know whether type has been found
+        let foundType = false //Added from original
+
+        // This inner loop is to loop thru each type this place have
+        for (let j = 0; j < place.types.length; j++) {
+            let type = place.types[j]
+            let placeTypeValue = userPlaceTypeTable.get(type)
+            let quizResultValue = user.preference.quizResult.get(type)
+            if (user.preference.quizResult.has(type)) {
+                foundType = true //Added from original
+                console.log("Type/value/place: " + type + "/" + quizResultValue + "/" + place.name)
+                ++count
+                value += quizResultValue
+            }
+        }
+    
+        if(place.rating && foundType) {
+           value += place.rating * 2
+           count += 1
+        }
+
+        if (value == 0 || count == 0) {
+            count = 1;
+        }
+        place["matchScore"] = Math.round((value / count * 100)) / 100
+        
+        res.push(place)
+        
+    }
+
+    
+
+    // This sorts the res array by score.
+    res.sort(function(a, b) {
+        let x = a.matchScore
+        let y = b.matchScore
+
+        if (x < y) {
+            return 1
+        }
+        if (x > y) {
+            return -1
+        }
+        return 0
+    })
+
+    //console.log("Alt sort method: ", res);
 
     return res
 }
