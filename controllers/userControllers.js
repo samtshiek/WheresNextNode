@@ -8,11 +8,11 @@ const fetch = require('../node_modules/node-fetch');
 const getPlaceList = async (req, res) => {
     //console.log("Object from angular: ", req.body);
 
-    const type = '';
-    const keyword = '';
+    const type = req.body.type;
+    const keyword = req.body.keyword;
     const userId = req.body.userId;
-    let address = req.body.address;
-    let radius = req.body.radius;
+    const address = req.body.address;
+    const radius = req.body.radius;
     let latitude = '';
     let longitude = '';
     let placesObject = undefined;
