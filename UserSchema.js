@@ -11,8 +11,9 @@ const preferenceSchema = new Schema({
     // Sensitive
     sensitive: { type: Number, default: 0 },
     // Bar, Museum, Park, Restaurant, Coffee, Trail, Movie
+    radius: { type: Number, default: 0 },
     placeType: { type: Map, of: Array, default: {} },
-    quizResult: {type: Map, of: Number, default: {}},
+    quizResult: { type: Map, of: Number, default: {} },
     favoritePlaces: { type: Array }
 })
 
