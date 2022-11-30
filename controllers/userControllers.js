@@ -150,10 +150,7 @@ const getPlace = async (req, res) => {
     console.log("getplace Id: ",placeId);
 
      try {
-      
-
-
-    const idPromise = fetch('https://maps.googleapis.com/maps/api/place/details/json?fields=name%2Cadr_address%2Cvicinity%2cphoto%2Ccurrent_opening_hours%2Cformatted_phone_number%2cicon%2Curl%2Crating%2Creviews%2Cprice_level&place_id='+ placeId + '&key='+detailsKEY);
+    const idPromise = fetch('https://maps.googleapis.com/maps/api/place/details/json?fields=name%2Cadr_address%2Cvicinity%2cphoto%2Cformatted_phone_number%2cicon%2Curl%2Crating%2Creviews%2Cprice_level%2Ceditorial_summary%2Copening_hours&place_id='+ placeId + '&key='+detailsKEY);
     
    idPromise
         .then(response => response.json())
@@ -458,7 +455,7 @@ async function sortQueryResultByPreference(places, userId) {
 
     let sortedPlaces = altCalculateMatchScoreAndSortByMatchScore(user, places)
     //let sortedPlaces = calculateMatchScoreAndSortByMatchScore(user, places)
-    console.log(sortedPlaces)
+    //console.log(sortedPlaces)
     return sortedPlaces
 }
 
@@ -522,7 +519,7 @@ function calculateMatchScoreAndSortByMatchScore(user, places) {
 //Alternative match score method to not include businesses that
 //do not have user types in the place list
 function altCalculateMatchScoreAndSortByMatchScore(user, places) {
-    console.log("Places coming in: ", places);
+    // console.log("Places coming in: ", places);
     let res = []
     let userPlaceTypeTable = user.preference.placeType
     // """""This big nested for-loop give each place a match score."""""
@@ -545,7 +542,7 @@ function altCalculateMatchScoreAndSortByMatchScore(user, places) {
             let quizResultValue = user.preference.quizResult.get(type)
             if (user.preference.quizResult.has(type)) {
                 foundType = true //Added from original
-                console.log("Type/value/place: " + type + "/" + quizResultValue + "/" + place.name)
+                //console.log("Type/value/place: " + type + "/" + quizResultValue + "/" + place.name)
                 ++count
                 value += quizResultValue
             }
@@ -585,6 +582,41 @@ function altCalculateMatchScoreAndSortByMatchScore(user, places) {
 
     return res
 }
+const addPlaceToFavorite = async(req, res) => {
+    let user = await User.findById(req.body.id)
+    let place = req.body.place
+
+    console.log("is it true", user.preference.favoritePlaces.has("0") )
+
+    if  (user.preference.favoritePlaces.has("0")) {
+        let favarray = user.preference.favoritePlaces.get("0")
+        favarray.push(place)
+        console.log("test", favarray)
+        user.preference.favoritePlaces.set("0", favarray)
+
+    }else{
+
+    user.preference.favoritePlaces.set("0", [])
+
+    }
+
+    user.save();
+
+
+    // let placeArray = ["places"]
+    //console.log("is it working", place)
+    res.json(user);
+       
+}
+const getFavoritePlace = async (req, res) => {
+    const user = await User.find(req.body.id)
+    const place = req.body.place
+    res.json(favarray)
+}
+
+
+
+
 
 module.exports = {
     getAllUsers,
@@ -595,5 +627,8 @@ module.exports = {
     sortQueryResultByPreference,
     editUser,
     getPlaceList,
-    getPlace
+    getPlace,
+    addPlaceToFavorite,
+    getFavoritePlace,
+    
 }

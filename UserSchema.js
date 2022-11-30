@@ -14,7 +14,7 @@ const preferenceSchema = new Schema({
     radius: { type: Number, default: 0 },
     placeType: { type: Map, of: Array, default: {} },
     quizResult: { type: Map, of: Number, default: {} },
-    favoritePlaces: { type: Array }
+    favoritePlaces: { type: Map, of: Array, default: {}  }
 })
 
 const userSchema = new Schema({
