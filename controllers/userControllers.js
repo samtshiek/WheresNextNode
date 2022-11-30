@@ -150,10 +150,7 @@ const getPlace = async (req, res) => {
     console.log("getplace Id: ",placeId);
 
      try {
-      
-
-
-    const idPromise = fetch('https://maps.googleapis.com/maps/api/place/details/json?fields=name%2Cadr_address%2Cvicinity%2cphoto%2Ccurrent_opening_hours%2Cformatted_phone_number%2cicon%2Curl%2Crating%2Creviews%2Cprice_level&place_id='+ placeId + '&key='+detailsKEY);
+    const idPromise = fetch('https://maps.googleapis.com/maps/api/place/details/json?fields=name%2Cadr_address%2Cvicinity%2cphoto%2Cformatted_phone_number%2cicon%2Curl%2Crating%2Creviews%2Cprice_level%2Ceditorial_summary%2Copening_hours&place_id='+ placeId + '&key='+detailsKEY);
     
    idPromise
         .then(response => response.json())
