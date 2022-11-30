@@ -13,7 +13,7 @@ const preferenceSchema = new Schema({
     // Bar, Museum, Park, Restaurant, Coffee, Trail, Movie
     placeType: { type: Map, of: Array, default: {} },
     quizResult: {type: Map, of: Number, default: {}},
-    favoritePlaces: { type: Array }
+    favoritePlaces: { type: Map, of: Array, default: {}  }
 })
 
 const userSchema = new Schema({
