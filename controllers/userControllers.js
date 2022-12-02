@@ -306,6 +306,7 @@ const gradeQuiz = async (req, res) => {
     user.preference.sensitive = sensitiveCount > 0 ? sensitive / sensitiveCount : 0
     user = assignPlaceTypeValueBasedOnUserCharacteristics(user)
     user.hasTakenQuiz = true
+    user.preference.radius = req.body.radius;
     user.save();
     res.json(user)
 }
@@ -615,6 +616,29 @@ const getFavoritePlace = async (req, res) => {
     res.json(favarray)
 }
 
+// remove a place from favorite
+const removePlaceFromFavorite = async(req, res) => {
+    let user = await User.findById(req.body.id)
+    let place = req.body.place
+    
+    if  (user.preference.favoritePlaces.has("0")) {
+        let favarray = user.preference.favoritePlaces.get("0")
+        favarray.splice(place,1)
+        console.log("test", favarray)
+        user.preference.favoritePlaces.set("0", favarray)
+
+    }else{
+
+    user.preference.favoritePlaces.set("0", [])
+
+    }
+
+   
+
+    user.save();
+    res.json(user);
+}
+
 
 
 
@@ -631,5 +655,7 @@ module.exports = {
     getPlace,
     addPlaceToFavorite,
     getFavoritePlace,
+    removePlaceFromFavorite,
+   
     
 }

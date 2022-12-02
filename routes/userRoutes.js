@@ -14,6 +14,7 @@ router.post("/get-recommendations", User.sortQueryResultByPreference);
 router.post("/update_user/", User.editUser);
 router.post("/get-places", User.getPlaceList);
 router.post("/add-place-to-favorite", User.addPlaceToFavorite);
+router.post("/remove-favorite", User.removePlaceFromFavorite);
 
 
 
