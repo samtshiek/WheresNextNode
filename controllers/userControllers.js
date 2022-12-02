@@ -556,8 +556,10 @@ function altCalculateMatchScoreAndSortByMatchScore(user, places) {
             count = 1;
         }
         place["matchScore"] = Math.round((value / count * 100)) / 100
+        if (place["matchScore"] > 0) {
+            res.push(place)
+        }
         
-        res.push(place)
         
     }
 
