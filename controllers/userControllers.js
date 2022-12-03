@@ -344,33 +344,33 @@ function assignPlaceTypeValueBasedOnUserCharacteristics(user) {
 
     // extroverted
     if (extroverted > 7.5) {
-        let addOne = ["casino", "bar", "night_club", "amusement_park", "jewelry_store", "movie_theater", "rv_park", "spa", "beauty_salon", "hair_care", "laundry", "church", "hindu_temple", "synagogue"]
+        let addOne = [ "bar", "night_club", "amusement_park", "movie_theater","restaurant"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
 
     } else if (extroverted > 5) {
-        let addOne = ["bowling_alley", "movie_theater", "amusement_park", "beauty_salon", "hair_care", "bakery"]
-        let addHalf = ["bar", "night_club", "rv_park", "laundry", "church", "hindu_temple", "synagogue"]
+        let addOne = ["bowling_alley", "movie_theater", "amusement_park","cafe","restaurant"]
+        let addHalf = ["bar", "night_club"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
     } else if (extroverted > 2.5) {
-        let addOne = ["bakery","aquarium","meal_takeaway","meal_delivery","liquor_store","home_goods_store"]
-        let addHalf = ["cafe", "library", "museum"]
+        let addOne = ["meal_takeaway","meal_delivery"]
+        let addHalf = ["cafe", "museum"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
     } else {
-        let addOne = ["movie_rental","book_store","meal_delivery"]
+        let addOne = ["meal_delivery","park"]
         let addHalf = ["cafe", "library"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
     }
     
     // outdoor
     if (outdoor > 7.5) {
-        let addOne = ["tourist_attraction", "lodging", "zoo", "travel_agency", "campground", "park", "amusement_park", "light_rail_station", "airport", "bus_station", "car_rental", "taxi_stand", "transit_station", "travel_agency", "subway_station", "gas_station", "train_station", "embassy"]
+        let addOne = [ "campground", "park", "amusement_park","trail"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
     } else if (outdoor > 5) {
-        let addOne = ["zoo", "park"]
-        let addHalf = ["tourist_attraction", "light_rail_station", "airport", "bus_station", "subway_station", "gas_station", "train_station"]
+        let addOne = ["park","trail"]
+       // let addHalf = []
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
     } else if (outdoor > 2.5) {
-        let addOne = ["museum", "movie_rental"]
+        let addOne = ["museum", "movie_rental", "restaurant","museum"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
     } else {
         let addOne = ["book_store", "meal_delivery", "movie_rental"]
@@ -379,13 +379,13 @@ function assignPlaceTypeValueBasedOnUserCharacteristics(user) {
     
     // active
     if (active > 7.5){
-        let addOne = ["physiotherapist", "bicycle_store", "gym", "stadium", "amusement_park", "restaurant", "spa"]
+        let addOne = ["trail", "gym","park","bowling_alley"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
     } else if (active > 5) {
-        let addOne = ["bowling_alley", "restaurant", "shopping_mall", "clothing_store", "shoe_store", "furniture_store", "park", "home_goods_store"]
+        let addOne = ["bowling_alley", "restaurant",  "park", "movie_theater"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
     } else if (active > 2.5) {
-        let addOne = ["meal_takeaway", "clothing_store", "spa", "shoe_store", "electronics_store", "supermarket", "store"]
+        let addOne = ["meal_takeaway","movie_theater"]
         let addHalf = ["department_store", "convenience_store"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
     } else {
@@ -395,18 +395,18 @@ function assignPlaceTypeValueBasedOnUserCharacteristics(user) {
 
     // sensitive
     if (sensitive > 7.5) {
-        let addOne = ["florist", "museum", "aquarium", "pet_store", "art_gallery", "bakery", "painter", "zoo", "church", "hindu_temple", "synagogue", "jewelry_store", "veterinary_care", "drugstore"]
+        let addOne = [ "museum","art_gallery", "bakery", "zoo", ]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
     } else if (sensitive > 5) {
-        let addOne = ["park", "bakery", "aquarium", "art_gallery", "painter", "zoo"]
-        let addHalf = ["museum", "pet_store", "drugstore"]
+        let addOne = ["park", "bakery", "aquarium", "zoo","restraurant"]
+        let addHalf = ["museum", "pet_store"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
     } else if (sensitive > 2.5) {
-        let addHalf = ["cafe", "liquor_store", "bar"]
+        let addHalf = ["cafe", "bar"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(null, addHalf, user)
 
     } else {
-        let addOne = ["department_store", "university", "city_hall", "supermarket", "courthouse", "school", "local_government_office", "insurance_agency", "liquor_store", "bar"]
+        let addOne = [ "bar","bowling_alley"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
     }
     console.log(user)
