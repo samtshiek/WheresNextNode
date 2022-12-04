@@ -5,10 +5,10 @@ require('dotenv').config();
 // CORS
 const cors = require('cors');
 const corsOptions = {
-    origin: 'http://localhost:4200',
+    origin: 'https://localhost:4200',
     optionsSuccessStatus: 200
 }
-app.use(cors(corsOptions));
+//app.use(cors(corsOptions));
 app.use(express.json())
 
 // mongoDB connection
@@ -36,5 +36,5 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, (err) => {
 	if (err) console.error("Error happens!")
-	console.log(`It's working... "http://127.0.0.1:${PORT}`)
+	//console.log(`It's working... "https://127.0.0.1:${PORT}`)
 })
