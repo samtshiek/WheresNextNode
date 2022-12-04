@@ -237,13 +237,13 @@ const gradeQuiz = async (req, res) => {
         c8:  [7, -1, -1, -1], // Bar 7
         d8:  [-1, -1, -1, -1], // Bar 0
 
-        a9:  [10, -1, -1, -1], // Coffee shop 10
-        b9:  [8, -1, -1, -1], // Coffee shop 8
-        c9:  [-1, -1, -1, -1], // Coffee shop 5
-        d9:  [-1, -1, -1, -1], // Coffee shop 0
+        a9:  [10, -1, -1, 5], // E 10
+        b9:  [8, -1, -1, -1], 
+        c9:  [5, -1, -1, 6], 
+        d9:  [-1, -1, -1, 8], 
 
         a10: [6, -1, 10, -1],
-        b10: [-1, 10, 8, -1], // Trail 10
+        b10: [-1, 10, 8, -1], // Trail 10  extroverted, outdoor, active, sensitive
         c10: [-1, -1, 6, -1],
         d10: [-1, -1, 0, -1], // Movie Theater 7
         
