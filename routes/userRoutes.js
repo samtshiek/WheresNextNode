@@ -13,6 +13,7 @@ router.post("/submit-quiz", User.gradeQuiz);
 router.post("/get-recommendations", User.sortQueryResultByPreference);
 router.post("/update_user/", User.editUser);
 router.post("/get-places", User.getPlaceList);
+router.post("/get-places-advanced", User.getPlacesAdvanced);
 router.post("/add-place-to-favorite", User.addPlaceToFavorite);
 router.post("/remove-favorite", User.removePlaceFromFavorite);
 

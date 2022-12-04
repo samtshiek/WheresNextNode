@@ -8,7 +8,7 @@ const corsOptions = {
     origin: 'https://localhost:4200',
     optionsSuccessStatus: 200
 }
-//app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 app.use(express.json())
 
 // mongoDB connection

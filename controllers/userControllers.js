@@ -5,11 +5,14 @@ require('dotenv').config();
 const fetch = require('../node_modules/node-fetch');
 
 const detailsKEY = process.env.detailsKEY;
+const geoKey = process.env.geoKey;
+const placesKey = process.env.placesKey;
 
 //Send place results
 const getPlaceList = async (req, res) => {
     //console.log("Object from angular: ", req.body);
 
+    let user = await User.findById(req.body.id)
     const type = req.body.type;
     const keyword = req.body.keyword;
     const userId = req.body.userId;
@@ -19,8 +22,13 @@ const getPlaceList = async (req, res) => {
     let longitude = '';
     let placesObject = undefined;
     let geoObject = undefined;
+
+    if (radius) {
+        user.preference.radius = radius;
+        user.save();
+    }
     
-    const longlatPromise = fetch('https://maps.googleapis.com/maps/api/geocode/json?address='+ address + '&key=AIzaSyDlcVUDD3WhvXXA2XvrTflCjMn0VO3Bam8');
+    const longlatPromise = fetch('https://maps.googleapis.com/maps/api/geocode/json?address='+ address + '&key='+ geoKey);
     
     longlatPromise
     .then(response => response.json())
@@ -31,7 +39,7 @@ const getPlaceList = async (req, res) => {
         console.log("Lat Long promise result: ", geoObject.results[0].geometry.location.lat + '/' + geoObject.results[0].geometry.location.lng);
 }, rejected => {console.log("Rejected: ", rejected)})
     .then(() => {
-        const placePromise = fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword='+ keyword +'&location='+ latitude +'%2C'+ longitude +'&radius='+ radius +'&type='+ type +'&key=AIzaSyBKuuHUPZ_BDWlCnLSYPylkTCd7LQpsU6s');
+        const placePromise = fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword='+ keyword +'&location='+ latitude +'%2C'+ longitude +'&radius='+ radius +'&type='+ type +'&key='+ placesKey);
         placePromise
         .then(response => response.json())
         .then(async response => {
@@ -40,6 +48,49 @@ const getPlaceList = async (req, res) => {
 
             let sortedPlaces = await sortQueryResultByPreference(placesObject.results, userId)
             placesObject.results = sortedPlaces
+            let geoPlace = {
+                geo: geoObject,
+                places: placesObject
+            }
+            res.json(geoPlace);
+            
+        })
+    })
+
+}
+
+//Send places using places advanced method
+const getPlacesAdvanced = async (req, res) => {
+
+    const type = req.body.type;
+    const keyword = req.body.keyword;
+    const userId = req.body.userId;
+    const address = req.body.address;
+    const radius = req.body.radius;
+    let latitude = '';
+    let longitude = '';
+    let placesObject = undefined;
+    let geoObject = undefined;
+
+    
+    const longlatPromise = fetch('https://maps.googleapis.com/maps/api/geocode/json?address='+ address + '&key='+ geoKey);
+    
+    longlatPromise
+    .then(response => response.json())
+    .then(response => {
+        geoObject = response;
+        latitude = geoObject.results[0].geometry.location.lat;
+        longitude = geoObject.results[0].geometry.location.lng;
+        console.log("Lat Long promise result: ", geoObject.results[0].geometry.location.lat + '/' + geoObject.results[0].geometry.location.lng);
+}, rejected => {console.log("Rejected: ", rejected)})
+    .then(() => {
+        const placePromise = fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword='+ keyword +'&location='+ latitude +'%2C'+ longitude +'&radius='+ radius +'&type='+ type +'&key='+ placesKey);
+        placePromise
+        .then(response => response.json())
+        .then(async response => {
+
+            placesObject = response;
+
             let geoPlace = {
                 geo: geoObject,
                 places: placesObject
@@ -652,6 +703,7 @@ module.exports = {
     sortQueryResultByPreference,
     editUser,
     getPlaceList,
+    getPlacesAdvanced,
     getPlace,
     addPlaceToFavorite,
     getFavoritePlace,
