@@ -15,7 +15,7 @@ const getPlaceList = async (req, res) => {
     let user = await User.findById(req.body.id)
     const type = req.body.type;
     const keyword = req.body.keyword;
-    const userId = req.body.userId;
+    const userId = req.body.id;
     const address = req.body.address;
     const radius = req.body.radius;
     let latitude = '';
@@ -570,7 +570,7 @@ function calculateMatchScoreAndSortByMatchScore(user, places) {
 //Alternative match score method to not include businesses that
 //do not have user types in the place list
 function altCalculateMatchScoreAndSortByMatchScore(user, places) {
-    // console.log("Places coming in: ", places);
+    //console.log("Places coming in: ", places);
     let res = []
     let userPlaceTypeTable = user.preference.placeType
     // """""This big nested for-loop give each place a match score."""""
