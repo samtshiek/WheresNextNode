@@ -311,12 +311,9 @@ const gradeQuiz = async (req, res) => {
         a13: [6, -1, 10, -1],
         b13: [-1, 10, 8, -1], 
         c13: [-1, -1, 6, -1],
-        d13: [-1, -1, 0, -1],
+        d13: [-1, -1, 0, -1]
 
-        a14: [6, -1, 10, -1],
-        b14: [-1, 10, 8, -1], 
-        c14: [-1, -1, 6, -1],
-        d14: [-1, -1, 0, -1],
+
     }
     const ansArray = req.body.results;
 
@@ -449,7 +446,7 @@ function assignPlaceTypeValueBasedOnUserCharacteristics(user) {
         let addOne = [ "museum","art_gallery", "bakery", "zoo", ]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, null, user)
     } else if (sensitive > 5) {
-        let addOne = ["park", "bakery", "aquarium", "zoo","restraurant"]
+        let addOne = ["park", "bakery", "aquarium", "zoo","restaurant"]
         let addHalf = ["museum", "pet_store"]
         user = helperForAssigningPlaceTypeBasedOnCharacteristics(addOne, addHalf, user)
     } else if (sensitive > 2.5) {
