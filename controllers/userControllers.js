@@ -20,7 +20,7 @@ const getPlaceList = async (req, res) => {
     const radius = req.body.radius;
     let latitude = '';
     let longitude = '';
-    let placesObject = undefined;
+    let placesObject = { results: []};
     let geoObject = undefined;
 
     if (radius) {
@@ -38,26 +38,34 @@ const getPlaceList = async (req, res) => {
         longitude = geoObject.results[0].geometry.location.lng;
         console.log("Lat Long promise result: ", geoObject.results[0].geometry.location.lat + '/' + geoObject.results[0].geometry.location.lng);
 }, rejected => {console.log("Rejected: ", rejected)})
-    .then(() => {
-        const placePromise = fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword='+ keyword +'&location='+ latitude +'%2C'+ longitude +'&radius='+ radius +'&type='+ type +'&key='+ placesKey);
-        placePromise
-        .then(response => response.json())
-        .then(async response => {
+    .then(async () => {
 
-            placesObject = response;
+        for (let placeType of user.preference.quizResult.keys()) {
+            console.log("Place type: " + placeType);
+            let placePromise = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword='+ keyword +'&location='+ latitude +'%2C'+ longitude +'&radius='+ radius +'&type='+ placeType +'&key='+ placesKey);
+            let placeResponse = placePromise.json();
+            //console.log("Place response: ", placeResponse);
+            placeResponse
+            .then(response => {
 
+            placesObject.results = placesObject.results.concat(response.results);
+            //console.log("placesObject after loop: ", placesObject.results);
+          });
+        }
+    })
+    .then(async ()=> {
+        
             let sortedPlaces = await sortQueryResultByPreference(placesObject.results, userId)
             placesObject.results = sortedPlaces
             let geoPlace = {
                 geo: geoObject,
                 places: placesObject
             }
-            res.json(geoPlace);
             
+            res.json(geoPlace);
         })
-    })
+    }
 
-}
 
 //Send places using places advanced method
 const getPlacesAdvanced = async (req, res) => {
